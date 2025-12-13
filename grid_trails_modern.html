@@ -290,18 +290,23 @@
             }
         }
 
-        /* Mini Grid Demo */
-        .mini-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 50px);
-            gap: 8px;
+        /* Demo Grid (4x4) */
+        .demo-board-wrapper {
+            position: relative;
+            width: fit-content;
             margin: 20px auto;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 40px);
+            gap: 8px;
             justify-content: center;
         }
 
-        .mini-cell {
-            width: 50px;
-            height: 50px;
+        .demo-cell {
+            width: 40px;
+            height: 40px;
             background-color: #E5E7EB;
             border-radius: 6px;
             display: flex;
@@ -309,56 +314,340 @@
             align-items: center;
             font-weight: 700;
             color: #374151;
-            font-size: 1.25rem;
+            font-size: 1rem;
         }
 
-        @keyframes demoClick {
+        .demo-cursor {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: rgba(255, 0, 0, 0.7);
+            border-radius: 50%;
+            pointer-events: none;
+            top: 0;
+            left: 0;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
 
-            0%,
+        /* Cursor Animation for Part A (approximate positions based on grid layout) */
+        /* Grid Layout: 
+           1  5  9  13
+           2  6  10 14
+           3  7  11 15
+           4  8  12 16
+           (But randomized in game. Here we hardcode layout)
+           Let's use layout:
+           1  8  3  11
+           14 2  16 5
+           9  6  4  10
+           13 15 7  12
+           
+           Cell size 40, gap 8.
+           Col 1 center: 20px
+           Col 2 center: 68px
+           Col 3 center: 116px
+           Col 4 center: 164px
+           Row 1 center: 20px
+           ...
+        */
+
+        @keyframes cursorMoveA {
+            0% {
+                top: 150%;
+                left: 150%;
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            /* Move to 1 (0,0) -> 20px, 20px */
             20% {
-                background-color: #E5E7EB;
+                top: 20px;
+                left: 20px;
                 transform: scale(1);
-                color: #374151;
             }
 
             25% {
-                background-color: #D1D5DB;
-                transform: scale(0.95);
+                transform: scale(0.8);
             }
 
-            30%,
+            /* Click */
+            30% {
+                transform: scale(1);
+            }
+
+            /* Move to 2 (1,1) -> 68px, 68px */
+            40% {
+                top: 68px;
+                left: 68px;
+                transform: scale(1);
+            }
+
+            45% {
+                transform: scale(0.8);
+            }
+
+            50% {
+                transform: scale(1);
+            }
+
+            /* Move to 3 (0,2) -> 20px, 116px */
+            60% {
+                top: 20px;
+                left: 116px;
+                transform: scale(1);
+            }
+
+            65% {
+                transform: scale(0.8);
+            }
+
+            70% {
+                transform: scale(1);
+            }
+
+            /* Move to 4 (2,2) -> 116px, 116px */
+            80% {
+                top: 116px;
+                left: 116px;
+                transform: scale(1);
+            }
+
+            85% {
+                transform: scale(0.8);
+            }
+
             90% {
-                background-color: #9CA3AF;
-                color: #F3F4F6;
                 transform: scale(1);
             }
 
             100% {
-                background-color: #E5E7EB;
+                top: 116px;
+                left: 116px;
+                opacity: 0;
+            }
+        }
+
+        @keyframes cursorMoveB {
+            0% {
+                top: 150%;
+                left: 150%;
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            /* Move to 1 (0,0) -> 20px, 20px */
+            20% {
+                top: 20px;
+                left: 20px;
                 transform: scale(1);
+            }
+
+            25% {
+                transform: scale(0.8);
+            }
+
+            30% {
+                transform: scale(1);
+            }
+
+            /* Move to A (1,1) -> 68px, 68px */
+            40% {
+                top: 68px;
+                left: 68px;
+                transform: scale(1);
+            }
+
+            45% {
+                transform: scale(0.8);
+            }
+
+            50% {
+                transform: scale(1);
+            }
+
+            /* Move to 2 (0,2) -> 20px, 116px */
+            60% {
+                top: 20px;
+                left: 116px;
+                transform: scale(1);
+            }
+
+            65% {
+                transform: scale(0.8);
+            }
+
+            70% {
+                transform: scale(1);
+            }
+
+            /* Move to B (2,2) -> 116px, 116px */
+            80% {
+                top: 116px;
+                left: 116px;
+                transform: scale(1);
+            }
+
+            85% {
+                transform: scale(0.8);
+            }
+
+            90% {
+                transform: scale(1);
+            }
+
+            100% {
+                top: 116px;
+                left: 116px;
+                opacity: 0;
+            }
+        }
+
+        .cursor-anim-a {
+            animation: cursorMoveA 4s infinite;
+        }
+
+        .cursor-anim-b {
+            animation: cursorMoveB 4s infinite;
+        }
+
+        @keyframes cellActive1 {
+
+            0%,
+            20% {
+                background-color: #E5E7EB;
+                color: #374151;
+            }
+
+            25% {
+                transform: scale(0.95);
+                background-color: #9CA3AF;
+                color: #F3F4F6;
+            }
+
+            30% {
+                transform: scale(1);
+            }
+
+            95% {
+                background-color: #9CA3AF;
+                color: #F3F4F6;
+            }
+
+            100% {
+                background-color: #E5E7EB;
                 color: #374151;
             }
         }
 
-        /* Demo Timings (Loop duration: 5s) */
-        .demo-step-1 {
-            animation: demoClick 4s infinite;
-            animation-delay: 0.5s;
+        @keyframes cellActive2 {
+
+            0%,
+            40% {
+                background-color: #E5E7EB;
+                color: #374151;
+            }
+
+            45% {
+                transform: scale(0.95);
+                background-color: #9CA3AF;
+                color: #F3F4F6;
+            }
+
+            50% {
+                transform: scale(1);
+            }
+
+            95% {
+                background-color: #9CA3AF;
+                color: #F3F4F6;
+            }
+
+            100% {
+                background-color: #E5E7EB;
+                color: #374151;
+            }
         }
 
-        .demo-step-2 {
-            animation: demoClick 4s infinite;
-            animation-delay: 1.5s;
+        @keyframes cellActive3 {
+
+            0%,
+            60% {
+                background-color: #E5E7EB;
+                color: #374151;
+            }
+
+            65% {
+                transform: scale(0.95);
+                background-color: #9CA3AF;
+                color: #F3F4F6;
+            }
+
+            70% {
+                transform: scale(1);
+            }
+
+            95% {
+                background-color: #9CA3AF;
+                color: #F3F4F6;
+            }
+
+            100% {
+                background-color: #E5E7EB;
+                color: #374151;
+            }
         }
 
-        .demo-step-3 {
-            animation: demoClick 4s infinite;
-            animation-delay: 2.5s;
+        @keyframes cellActive4 {
+
+            0%,
+            80% {
+                background-color: #E5E7EB;
+                color: #374151;
+            }
+
+            85% {
+                transform: scale(0.95);
+                background-color: #9CA3AF;
+                color: #F3F4F6;
+            }
+
+            90% {
+                transform: scale(1);
+            }
+
+            95% {
+                background-color: #9CA3AF;
+                color: #F3F4F6;
+            }
+
+            100% {
+                background-color: #E5E7EB;
+                color: #374151;
+            }
         }
 
-        .demo-step-4 {
-            animation: demoClick 4s infinite;
-            animation-delay: 3.5s;
+        .demo-active-1 {
+            animation: cellActive1 4s infinite;
+        }
+
+        .demo-active-2 {
+            animation: cellActive2 4s infinite;
+        }
+
+        .demo-active-3 {
+            animation: cellActive3 4s infinite;
+        }
+
+        .demo-active-4 {
+            animation: cellActive4 4s infinite;
         }
     </style>
 </head>
@@ -502,15 +791,16 @@
                  <p style="font-size: 1.25rem; font-weight: bold; color: var(--primary-color)">1 ➔ 2 ➔ 3 ➔ ...</p>`,
 
                 `<p>Watch the example below:</p>
-                 <div class="mini-grid">
-                    <div class="mini-cell demo-step-1">1</div>
-                    <div class="mini-cell demo-step-3">3</div>
-                    <div class="mini-cell">5</div>
-                    <div class="mini-cell">4</div>
-                    <div class="mini-cell demo-step-2">2</div>
-                    <div class="mini-cell">6</div>
+                 <div class="demo-board-wrapper">
+                    <div class="demo-cursor cursor-anim-a"></div>
+                    <div class="demo-grid">
+                        <div class="demo-cell demo-active-1">1</div><div class="demo-cell">8</div><div class="demo-cell demo-active-3">3</div><div class="demo-cell">11</div>
+                        <div class="demo-cell">14</div><div class="demo-cell demo-active-2">2</div><div class="demo-cell">16</div><div class="demo-cell">5</div>
+                        <div class="demo-cell">9</div><div class="demo-cell">6</div><div class="demo-cell demo-active-4">4</div><div class="demo-cell">10</div>
+                        <div class="demo-cell">13</div><div class="demo-cell">15</div><div class="demo-cell">7</div><div class="demo-cell">12</div>
+                    </div>
                  </div>
-                 <p>Click <strong>1</strong>, then <strong>2</strong>, then <strong>3</strong>, and so on.</p>`,
+                 <p>Click <strong>1</strong>, then <strong>2</strong>, then <strong>3</strong>, then <strong>4</strong>, and so on.</p>`,
 
                 `<p>If you make a mistake, the box will shake and turn red.</p>
                  <p>The timer will keep running, so try to be accurate and fast!</p>
@@ -524,13 +814,14 @@
                  <p style="font-size: 1.25rem; font-weight: bold; color: var(--primary-color)">1 ➔ A ➔ 2 ➔ B ➔ ...</p>`,
 
                 `<p>Watch the example below (Number, then Letter):</p>
-                 <div class="mini-grid">
-                    <div class="mini-cell demo-step-1">1</div>
-                    <div class="mini-cell demo-step-3">2</div>
-                    <div class="mini-cell">C</div>
-                    <div class="mini-cell demo-step-4">B</div>
-                    <div class="mini-cell demo-step-2">A</div>
-                    <div class="mini-cell">3</div>
+                 <div class="demo-board-wrapper">
+                    <div class="demo-cursor cursor-anim-b"></div>
+                    <div class="demo-grid">
+                        <div class="demo-cell demo-active-1">1</div><div class="demo-cell">H</div><div class="demo-cell demo-active-3">2</div><div class="demo-cell">D</div>
+                        <div class="demo-cell">F</div><div class="demo-cell demo-active-2">A</div><div class="demo-cell">E</div><div class="demo-cell">3</div>
+                        <div class="demo-cell">5</div><div class="demo-cell">8</div><div class="demo-cell demo-active-4">B</div><div class="demo-cell">G</div>
+                        <div class="demo-cell">7</div><div class="demo-cell">C</div><div class="demo-cell">4</div><div class="demo-cell">6</div>
+                    </div>
                  </div>
                  <p>Click <strong>1</strong> ➔ <strong>A</strong> ➔ <strong>2</strong> ➔ <strong>B</strong>...</p>`,
 
