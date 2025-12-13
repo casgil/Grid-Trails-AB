@@ -675,11 +675,15 @@
                 <!-- Content injected via JS -->
             </div>
             <br>
-            <div style="display: flex; gap: 10px; justify-content: center;">
+            <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 15px;">
                 <button id="btn-back" class="btn" style="background-color: #9CA3AF; display: none;"
                     onclick="app.prevInstruction()">Back</button>
                 <button id="btn-next" class="btn" onclick="app.nextInstruction()">Next</button>
             </div>
+            <a id="btn-skip" href="#" onclick="app.skipInstructions(); return false;"
+                style="color: var(--text-light); font-size: 0.9rem; text-decoration: underline; cursor: pointer;">
+                Skip Instructions
+            </a>
         </div>
     </div>
 
@@ -861,6 +865,14 @@
                 } else {
                     btnBack.style.display = 'none';
                 }
+
+                // Update Skip button
+                const btnSkip = document.getElementById('btn-skip');
+                if (isLast) {
+                    btnSkip.style.display = 'none';
+                } else {
+                    btnSkip.style.display = 'inline-block';
+                }
             }
 
             function nextInstruction() {
@@ -877,6 +889,10 @@
                     state.instStep--;
                     renderInstruction(arr);
                 }
+            }
+
+            function skipInstructions() {
+                startGame();
             }
 
             // Game Logic
@@ -899,7 +915,9 @@
                 state.sequence = generateSequence(state.currentPart);
                 state.currentIndex = 0;
                 state.errors = 0;
+                state.timerRunning = false; // Flag for delayed start
                 gamePartEl.textContent = `Part ${state.currentPart}`;
+                timerEl.textContent = '0.0'; // Reset display
 
                 // Shuffle grid items
                 const gridItems = [...state.sequence];
@@ -916,20 +934,28 @@
                     board.appendChild(cell);
                 });
 
-                // Start Timer
-                state.startTime = Date.now();
+                // Clear any existing timer
                 if (state.timerInterval) clearInterval(state.timerInterval);
-                state.timerInterval = setInterval(updateTimer, 100);
+                state.timerInterval = null;
+                state.startTime = null;
 
                 showScreen('screen-game');
             }
 
             function updateTimer() {
+                if (!state.startTime) return;
                 const delta = (Date.now() - state.startTime) / 1000;
                 timerEl.textContent = delta.toFixed(1);
             }
 
             function handleCellClick(cell) {
+                // Start timer on first interaction (if not running)
+                if (!state.timerRunning) {
+                    state.timerRunning = true;
+                    state.startTime = Date.now();
+                    state.timerInterval = setInterval(updateTimer, 100);
+                }
+
                 if (cell.classList.contains('correct')) return;
 
                 const target = state.sequence[state.currentIndex];
@@ -1022,6 +1048,7 @@
                 prevInstruction,
                 startPartBInstructions,
                 startGame,
+                skipInstructions,
                 downloadData
             };
         }();
