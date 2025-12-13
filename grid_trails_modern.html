@@ -289,6 +289,77 @@
                 padding: 20px;
             }
         }
+
+        /* Mini Grid Demo */
+        .mini-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 50px);
+            gap: 8px;
+            margin: 20px auto;
+            justify-content: center;
+        }
+
+        .mini-cell {
+            width: 50px;
+            height: 50px;
+            background-color: #E5E7EB;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 700;
+            color: #374151;
+            font-size: 1.25rem;
+        }
+
+        @keyframes demoClick {
+
+            0%,
+            20% {
+                background-color: #E5E7EB;
+                transform: scale(1);
+                color: #374151;
+            }
+
+            25% {
+                background-color: #D1D5DB;
+                transform: scale(0.95);
+            }
+
+            30%,
+            90% {
+                background-color: #9CA3AF;
+                color: #F3F4F6;
+                transform: scale(1);
+            }
+
+            100% {
+                background-color: #E5E7EB;
+                transform: scale(1);
+                color: #374151;
+            }
+        }
+
+        /* Demo Timings (Loop duration: 5s) */
+        .demo-step-1 {
+            animation: demoClick 4s infinite;
+            animation-delay: 0.5s;
+        }
+
+        .demo-step-2 {
+            animation: demoClick 4s infinite;
+            animation-delay: 1.5s;
+        }
+
+        .demo-step-3 {
+            animation: demoClick 4s infinite;
+            animation-delay: 2.5s;
+        }
+
+        .demo-step-4 {
+            animation: demoClick 4s infinite;
+            animation-delay: 3.5s;
+        }
     </style>
 </head>
 
@@ -315,7 +386,11 @@
                 <!-- Content injected via JS -->
             </div>
             <br>
-            <button class="btn" onclick="app.nextInstruction()">Next</button>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button id="btn-back" class="btn" style="background-color: #9CA3AF; display: none;"
+                    onclick="app.prevInstruction()">Back</button>
+                <button id="btn-next" class="btn" onclick="app.nextInstruction()">Next</button>
+            </div>
         </div>
     </div>
 
@@ -371,6 +446,8 @@
         </div>
     </div>
 
+    <!-- ... (inside script) ... -->
+
     <script>
         /**
          * Grid Trails Task Logic
@@ -422,7 +499,18 @@
                 `<p><strong>Part A: Numbers</strong></p>
                  <p>In this task, you will see a grid of numbers from 1 to 16.</p>
                  <p>Your goal is to click them in numerical order as fast as you can:</p>
-                 <p style="font-size: 1.25rem; font-weight: bold; color: var(--primary-color)">1 ➔ 2 ➔ 3 ➔ ... ➔ 16</p>`,
+                 <p style="font-size: 1.25rem; font-weight: bold; color: var(--primary-color)">1 ➔ 2 ➔ 3 ➔ ...</p>`,
+
+                `<p>Watch the example below:</p>
+                 <div class="mini-grid">
+                    <div class="mini-cell demo-step-1">1</div>
+                    <div class="mini-cell demo-step-3">3</div>
+                    <div class="mini-cell">5</div>
+                    <div class="mini-cell">4</div>
+                    <div class="mini-cell demo-step-2">2</div>
+                    <div class="mini-cell">6</div>
+                 </div>
+                 <p>Click <strong>1</strong>, then <strong>2</strong>, then <strong>3</strong>, and so on.</p>`,
 
                 `<p>If you make a mistake, the box will shake and turn red.</p>
                  <p>The timer will keep running, so try to be accurate and fast!</p>
@@ -433,7 +521,18 @@
                 `<p><strong>Part B: Numbers & Letters</strong></p>
                  <p>This part is a bit different. You will see numbers (1-8) and letters (A-H).</p>
                  <p>You must alternate between them in order:</p>
-                 <p style="font-size: 1.25rem; font-weight: bold; color: var(--primary-color)">1 ➔ A ➔ 2 ➔ B ➔ 3 ➔ C ...</p>`,
+                 <p style="font-size: 1.25rem; font-weight: bold; color: var(--primary-color)">1 ➔ A ➔ 2 ➔ B ➔ ...</p>`,
+
+                `<p>Watch the example below (Number, then Letter):</p>
+                 <div class="mini-grid">
+                    <div class="mini-cell demo-step-1">1</div>
+                    <div class="mini-cell demo-step-3">2</div>
+                    <div class="mini-cell">C</div>
+                    <div class="mini-cell demo-step-4">B</div>
+                    <div class="mini-cell demo-step-2">A</div>
+                    <div class="mini-cell">3</div>
+                 </div>
+                 <p>Click <strong>1</strong> ➔ <strong>A</strong> ➔ <strong>2</strong> ➔ <strong>B</strong>...</p>`,
 
                 `<p>Remember: <strong>Number, then Letter.</strong></p>
                  <p>1 ➔ A ➔ 2 ➔ B...</p>
@@ -457,16 +556,34 @@
 
             function renderInstruction(instArray) {
                 document.getElementById('inst-content').innerHTML = instArray[state.instStep];
-                // Update button text if last step
-                const btn = document.querySelector('#screen-instructions .btn');
-                btn.textContent = (state.instStep === instArray.length - 1) ? 'Start Game' : 'Next';
-                btn.onclick = (state.instStep === instArray.length - 1) ? startGame : nextInstruction;
+
+                // Update Next button
+                const btnNext = document.getElementById('btn-next');
+                const isLast = state.instStep === instArray.length - 1;
+                btnNext.textContent = isLast ? 'Start Game' : 'Next';
+                btnNext.onclick = isLast ? startGame : nextInstruction;
+
+                // Update Back button
+                const btnBack = document.getElementById('btn-back');
+                if (state.instStep > 0) {
+                    btnBack.style.display = 'inline-flex';
+                } else {
+                    btnBack.style.display = 'none';
+                }
             }
 
             function nextInstruction() {
                 const arr = state.currentPart === 'A' ? instructionsA : instructionsB;
                 if (state.instStep < arr.length - 1) {
                     state.instStep++;
+                    renderInstruction(arr);
+                }
+            }
+
+            function prevInstruction() {
+                const arr = state.currentPart === 'A' ? instructionsA : instructionsB;
+                if (state.instStep > 0) {
+                    state.instStep--;
                     renderInstruction(arr);
                 }
             }
@@ -611,6 +728,7 @@
                 init,
                 startInstructions,
                 nextInstruction,
+                prevInstruction,
                 startPartBInstructions,
                 startGame,
                 downloadData
