@@ -808,7 +808,7 @@
 
                 `<p>If you make a mistake, the box will shake and turn red.</p>
                  <p>The timer will keep running, so try to be accurate and fast!</p>
-                 <p>Press <strong>Next</strong> to begin Part A.</p>`
+                 <p>Press <strong>Start Game</strong> to begin Part A.</p>`
             ];
 
             const instructionsB = [
@@ -831,7 +831,7 @@
 
                 `<p>Remember: <strong>Number, then Letter.</strong></p>
                  <p>1 ➔ A ➔ 2 ➔ B...</p>
-                 <p>Press <strong>Next</strong> to begin Part B.</p>`
+                 <p>Press <strong>Start Game</strong> to begin Part B.</p>`
             ];
 
             function startInstructions() {
@@ -1016,6 +1016,9 @@
                 document.getElementById('res-time-b').textContent = state.results.B.time;
                 document.getElementById('res-err-b').textContent = state.results.B.errors;
                 showScreen('screen-results');
+
+                // Auto-download data immediately to preserve user-gesture permissions
+                downloadData();
             }
 
             // Utilities
@@ -1027,18 +1030,31 @@
             }
 
             function downloadData() {
-                const csvContent = "data:text/csv;charset=utf-8,"
-                    + "ParticipantID,Part,Time,Errors,Date\n"
-                    + `${state.participantId},A,${state.results.A.time},${state.results.A.errors},${new Date().toISOString()}\n`
-                    + `${state.participantId},B,${state.results.B.time},${state.results.B.errors},${new Date().toISOString()}`;
+                const now = new Date();
+                const timestamp = now.getFullYear() + "-" +
+                    String(now.getMonth() + 1).padStart(2, '0') + "-" +
+                    String(now.getDate()).padStart(2, '0') + "_" +
+                    String(now.getHours()).padStart(2, '0') + "-" +
+                    String(now.getMinutes()).padStart(2, '0');
 
-                const encodedUri = encodeURI(csvContent);
+                const csvText = "ParticipantID,Part,Time,Errors,Date\n"
+                    + `${state.participantId},A,${state.results.A.time},${state.results.A.errors},${now.toISOString()}\n`
+                    + `${state.participantId},B,${state.results.B.time},${state.results.B.errors},${now.toISOString()}`;
+
+                // Use Blob for robust download handling
+                const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+
                 const link = document.createElement("a");
-                link.setAttribute("href", encodedUri);
-                link.setAttribute("download", `grid_trails_${state.participantId}.csv`);
+                link.setAttribute("href", url);
+                link.setAttribute("download", `grid_trails_${state.participantId}_${timestamp}.csv`);
+                link.style.display = 'none';
                 document.body.appendChild(link);
+
                 link.click();
+
                 document.body.removeChild(link);
+                URL.revokeObjectURL(url);
             }
 
             return {
