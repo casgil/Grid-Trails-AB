@@ -10,7 +10,7 @@
     <script src="jspsych-8/index.browser.min.js"></script>
     <script src="jspsych-8/plugin-html-keyboard-response.min.js"></script>
     <script src="jspsych-8/plugin-instructions.min.js"></script>
-    <script src="jspsych-8/plugin-fullscreen.min.js"></script>
+    <!-- <script src="jspsych-8/plugin-fullscreen.min.js"></script> -->
     <script src="jspsych-8/plugin-survey-text.min.js"></script>
 
     <!-- Custom Plugin -->
@@ -326,6 +326,10 @@
                 transform: scale(1);
             }
 
+            95% {
+                opacity: 1;
+            }
+
             100% {
                 top: 116px;
                 left: 116px;
@@ -398,6 +402,10 @@
 
             90% {
                 transform: scale(1);
+            }
+
+            95% {
+                opacity: 1;
             }
 
             100% {
@@ -547,6 +555,33 @@
             animation: cellActive4 4s infinite;
         }
 
+        /* Results Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 1rem;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #E5E7EB;
+            text-align: center;
+        }
+
+        th {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        td:first-child,
+        th:first-child {
+            text-align: left;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
         /* Responsive */
         @media (max-width: 480px) {
             :root {
@@ -568,13 +603,8 @@
 <body></body>
 <script>
     // Initialize jsPsych
-    const jsPsych = initJsPsych({
-        on_finish: function () {
-            const date = new Date().toISOString();
-            const subjectId = jsPsych.data.get().select('response').values[0]?.Q0 || 'PARTICIPANT';
-            jsPsych.data.get().localSave('csv', `grid_trails_jspsych_${subjectId}_${date}.csv`);
-        }
-    });
+    // Initialize jsPsych
+    const jsPsych = initJsPsych();
 
     // Timeline
     const timeline = [];
@@ -592,11 +622,11 @@
     };
     timeline.push(participant_node);
 
-    // 2. Fullscreen
-    timeline.push({
-        type: jsPsychFullscreen,
-        fullscreen_mode: true
-    });
+    // 2. Fullscreen - Removed per user request
+    // timeline.push({
+    //     type: jsPsychFullscreen,
+    //     fullscreen_mode: true
+    // });
 
     // --- UTILS ---
     const generateSequenceA = () => Array.from({ length: 16 }, (_, i) => i + 1);
@@ -618,7 +648,8 @@
     };
 
     // --- PART A ---
-    const instructionsA = {
+    // Instructions Part 1 (Demo)
+    const instructionsA_intro = {
         type: jsPsychInstructions,
         pages: [
             `<div class="card">
@@ -640,8 +671,18 @@
                     </div>
                  </div>
                  <p>Click <strong>1</strong>, then <strong>2</strong>, then <strong>3</strong>, then <strong>4</strong>, and so on.</p>
-            </div>`,
+            </div>`
+        ],
+        show_clickable_nav: true,
+        button_label_next: "Next",
+        button_label_previous: "Back"
+    };
+    timeline.push(instructionsA_intro);
 
+    // Instructions Part 2 (Start Game)
+    const instructionsA_final = {
+        type: jsPsychInstructions,
+        pages: [
             `<div class="card">
                 <p>If you make a mistake, the box will shake and turn red.</p>
                 <p>The timer will keep running, so try to be accurate and fast!</p>
@@ -649,10 +690,10 @@
             </div>`
         ],
         show_clickable_nav: true,
-        button_label_next: "Next",
+        button_label_next: "Start Game",
         button_label_previous: "Back"
     };
-    timeline.push(instructionsA);
+    timeline.push(instructionsA_final);
 
     const PartA = {
         type: jsPsychTrails,
@@ -664,7 +705,8 @@
     timeline.push(PartA);
 
     // --- PART B ---
-    const instructionsB = {
+    // Instructions Part 1 (Demo)
+    const instructionsB_intro = {
         type: jsPsychInstructions,
         pages: [
             `<div class="card">
@@ -686,8 +728,18 @@
                     </div>
                  </div>
                  <p>Click <strong>1</strong> ➔ <strong>A</strong> ➔ <strong>2</strong> ➔ <strong>B</strong>...</p>
-            </div>`,
+            </div>`
+        ],
+        show_clickable_nav: true,
+        button_label_next: "Next",
+        button_label_previous: "Back"
+    };
+    timeline.push(instructionsB_intro);
 
+    // Instructions Part 2 (Start Game)
+    const instructionsB_final = {
+        type: jsPsychInstructions,
+        pages: [
             `<div class="card">
                  <p>Remember: <strong>Number, then Letter.</strong></p>
                  <p>1 ➔ A ➔ 2 ➔ B...</p>
@@ -695,10 +747,10 @@
             </div>`
         ],
         show_clickable_nav: true,
-        button_label_next: "Next",
+        button_label_next: "Start Game",
         button_label_previous: "Back"
     };
-    timeline.push(instructionsB);
+    timeline.push(instructionsB_final);
 
     const PartB = {
         type: jsPsychTrails,
@@ -709,16 +761,60 @@
     };
     timeline.push(PartB);
 
-    // End
+    // End - Results Summary
     const end_block = {
         type: jsPsychHtmlKeyboardResponse,
-        stimulus: `
-            <div class="card">
-                <h2>Task Complete</h2>
-                <p>Data will be downloaded automatically.</p>
-                <p>Press any key to finish.</p>
-            </div>
-        `
+        stimulus: function () {
+            // Retrieve data
+            const trials = jsPsych.data.get().filter({ trail_type: 'trails' }); // Custom plugin saves as 'trails' or usually filter by plugin type?
+            // Actually better to filter by our custom property 'trails_type' which we save.
+
+            // Get Part A data
+            // We used localsave 'csv' but internal data is object.
+            // Our plugin saves: { rt, errors, trails_type, grid_size }
+
+            const partA = jsPsych.data.get().filter({ trails_type: 'A' }).values()[0] || { rt: 0, errors: 0 };
+            const partB = jsPsych.data.get().filter({ trails_type: 'B' }).values()[0] || { rt: 0, errors: 0 };
+
+            const timeA = (partA.rt / 1000).toFixed(2);
+            const timeB = (partB.rt / 1000).toFixed(2);
+
+            return `
+                <div class="card">
+                    <h2>Task Complete</h2>
+                    <p>Thank you for participating!</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Part A</th>
+                                <th>Part B</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Time (s)</td>
+                                <td>${timeA}</td>
+                                <td>${timeB}</td>
+                            </tr>
+                            <tr>
+                                <td>Errors</td>
+                                <td>${partA.errors}</td>
+                                <td>${partB.errors}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p>Data will be downloaded automatically.</p>
+                    <p>Press any key to finish.</p>
+                </div>
+            `;
+        },
+        on_load: function () {
+            // Trigger download on load to match modern version behavior
+            const date = new Date().toISOString();
+            const subjectId = jsPsych.data.get().select('response').values[0]?.Q0 || 'PARTICIPANT';
+            jsPsych.data.get().localSave('csv', `grid_trails_jspsych_${subjectId}_${date}.csv`);
+        }
     };
     timeline.push(end_block);
 
