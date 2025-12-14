@@ -599,6 +599,56 @@
                 padding: 20px;
             }
         }
+
+        /* Landscape / Short Screen Optimization */
+        @media (max-height: 600px) {
+            :root {
+                --cell-size: 50px;
+                --gap-size: 8px;
+            }
+
+            .card {
+                padding: 15px;
+                margin: 10px auto;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+                margin-bottom: 0.5rem;
+            }
+
+            h2 {
+                font-size: 1.2rem;
+                margin-bottom: 0.5rem;
+            }
+
+            p {
+                margin-bottom: 1rem;
+                font-size: 1rem;
+            }
+
+            #game-board {
+                margin-bottom: 1rem;
+                padding: 10px;
+            }
+
+            .jspsych-btn {
+                padding: 8px 20px;
+            }
+        }
+
+        /* Touch Optimizations */
+        body {
+            overscroll-behavior: none;
+            /* Prevent bounce */
+        }
+
+        button,
+        .jspsych-btn,
+        .cell {
+            touch-action: manipulation;
+            /* Remove 300ms delay */
+        }
     </style>
 </head>
 
@@ -852,6 +902,7 @@
     // End - Results Summary
     const end_block = {
         type: jsPsychHtmlKeyboardResponse,
+        choices: "NO_KEYS",
         stimulus: function () {
             // Retrieve data
             const trials = jsPsych.data.get().filter({ trail_type: 'trails' }); // Custom plugin saves as 'trails' or usually filter by plugin type?
@@ -893,7 +944,6 @@
                         </tbody>
                     </table>
                     <p>Data will be downloaded automatically.</p>
-                    <p>Press any key to finish.</p>
                 </div>
             `;
         },
