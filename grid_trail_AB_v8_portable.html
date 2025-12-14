@@ -881,18 +881,17 @@
     // Timeline
     const timeline = [];
 
-    // 1. Participant ID
-    const participant_node = {
-        type: jsPsychSurveyText,
-        questions: [{ prompt: "<h2>Grid Trails Task</h2><p>Please enter your Participant ID:</p>", required: true }],
-        button_label: "Begin Task",
-        on_load: function () {
-            // Add card class to the survey container
-            const content = document.querySelector('.jspsych-content');
-            if (content) content.classList.add('card');
-        }
-    };
-    timeline.push(participant_node);
+    // 1. Participant ID - REMOVED PER USER REQUEST
+    // const participant_node = {
+    //     type: jsPsychSurveyText,
+    //     questions: [{ prompt: "<h2>Grid Trails Task</h2><p>Please enter your Participant ID:</p>", required: true }],
+    //     button_label: "Begin Task",
+    //     on_load: function () {
+    //         const content = document.querySelector('.jspsych-content');
+    //         if (content) content.classList.add('card');
+    //     }
+    // };
+    // timeline.push(participant_node);
 
     // 2. Fullscreen - Removed per user request
     // timeline.push({
@@ -925,6 +924,7 @@
         type: jsPsychInstructions,
         pages: [
             `<div class="card">
+                <h1>Welcome to the Grid Trails Task</h1>
                 <h2>Part A: Numbers</h2>
                 <p>In this task, you will see a grid of numbers from 1 to 16.</p>
                 <p>Your goal is to click them in numerical order as fast as you can:</p>

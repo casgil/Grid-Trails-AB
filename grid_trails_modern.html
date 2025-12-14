@@ -503,18 +503,9 @@
 
 <body>
 
-    <!-- SCREEN 1: Welcome -->
-    <div id="screen-welcome" class="screen active">
-        <div class="card">
-            <h1>Grid Trails Task</h1>
-            <p>Welcome to the study. This task measures mental flexibility and processing speed.</p>
-            <div class="input-group">
-                <label for="participant-id">Participant ID</label>
-                <input type="text" id="participant-id" placeholder="Enter ID (e.g., P001)">
-            </div>
-            <button class="btn" onclick="app.startInstructions()">Begin Task</button>
-        </div>
-    </div>
+    <!-- SCREEN 1: Welcome - REMOVED PER USER REQUEST -->
+    <!-- <div id="screen-welcome" class="screen active"> ... </div> -->
+
 
     <!-- SCREEN 2: Instructions -->
     <div id="screen-instructions" class="screen">
@@ -638,7 +629,9 @@
 
             // Instructions Logic
             const instructionsA = [
-                `<p><strong>Part A: Numbers</strong></p>
+                `<div class="card">
+                 <h1>Welcome to the Grid Trails Task</h1>
+                 <p><strong>Part A: Numbers</strong></p>
                  <p>In this task, you will see a grid of numbers from 1 to 16.</p>
                  <p>Your goal is to click them in numerical order as fast as you can:</p>
                  <p style="font-size: 1.25rem; font-weight: bold; color: var(--primary-color)">1 ➔ 2 ➔ 3 ➔ ...</p>`,
@@ -684,8 +677,6 @@
             ];
 
             function startInstructions() {
-                const id = document.getElementById('participant-id').value.trim();
-                state.participantId = id || 'Guest_' + Date.now();
                 state.instStep = 0;
                 renderInstruction(instructionsA);
                 showScreen('screen-instructions');
@@ -919,7 +910,10 @@
         }();
 
         // Start App
-        window.onload = App.init;
+        window.onload = function () {
+            state.participantId = 'Participant_' + Date.now();
+            startInstructions();
+        };
         // Expose to window for button onclicks
         window.app = App;
 
