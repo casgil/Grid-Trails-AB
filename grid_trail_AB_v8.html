@@ -52,6 +52,8 @@
             width: 100%;
             justify-content: center;
             align-items: center;
+            flex-direction: column;
+            /* Ensure vertical stacking for appended elements */
         }
 
         .jspsych-content {
@@ -603,8 +605,74 @@
 <body></body>
 <script>
     // Initialize jsPsych
-    // Initialize jsPsych
     const jsPsych = initJsPsych();
+
+    // Global skip flags
+    window.skipA = false;
+    window.skipB = false;
+
+    window.doSkip = function (part) {
+        if (part === 'A') window.skipA = true;
+        if (part === 'B') window.skipB = true;
+        jsPsych.finishTrial();
+    };
+
+    // Helper to cleanup skip button
+    const removeSkipButton = () => {
+        const existing = document.getElementById('skip-btn-container');
+        if (existing) existing.remove();
+    };
+
+    // Helper to add Skip Button below nav
+    const addSkipButton = (part) => {
+        const content = document.querySelector('.jspsych-content-wrapper'); // Append to wrapper to be below content
+        if (!content) return;
+
+        // Remove existing button first to avoid persistence or duplicates
+        removeSkipButton();
+
+        // Create skip container (centered, distinct)
+        const skipContainer = document.createElement('div');
+        skipContainer.id = 'skip-btn-container';
+        skipContainer.style.marginTop = '30px';
+        skipContainer.style.display = 'flex';
+        skipContainer.style.justifyContent = 'center';
+        skipContainer.style.zIndex = '1000';
+
+        // Create the button/link
+        const skipLink = document.createElement('button');
+        skipLink.textContent = "Skip Instructions";
+        skipLink.className = 'jspsych-btn';
+        // Modern secondary button style
+        skipLink.style.backgroundColor = 'transparent';
+        skipLink.style.color = '#6B7280';
+        skipLink.style.border = '2px solid #E5E7EB';
+        skipLink.style.fontSize = '0.9rem';
+        skipLink.style.padding = '8px 24px';
+        skipLink.style.borderRadius = '50px'; // Rounded pill shape
+        skipLink.style.cursor = 'pointer';
+        skipLink.style.transition = 'all 0.2s ease';
+        skipLink.style.fontWeight = '600';
+
+        // Hover effect helper
+        skipLink.onmouseenter = () => {
+            skipLink.style.color = '#374151';
+            skipLink.style.borderColor = '#9CA3AF';
+            skipLink.style.transform = 'translateY(-1px)';
+        };
+        skipLink.onmouseleave = () => {
+            skipLink.style.color = '#6B7280';
+            skipLink.style.borderColor = '#E5E7EB';
+            skipLink.style.transform = 'none';
+        };
+
+        skipLink.onclick = () => window.doSkip(part);
+
+        skipContainer.appendChild(skipLink);
+
+        // Append to the content wrapper so it sits below the main content area (and thus buttons)
+        content.appendChild(skipContainer);
+    };
 
     // Timeline
     const timeline = [];
@@ -675,7 +743,9 @@
         ],
         show_clickable_nav: true,
         button_label_next: "Next",
-        button_label_previous: "Back"
+        button_label_previous: "Back",
+        on_load: () => addSkipButton('A'),
+        on_finish: () => removeSkipButton()
     };
     timeline.push(instructionsA_intro);
 
@@ -693,7 +763,15 @@
         button_label_next: "Start Game",
         button_label_previous: "Back"
     };
-    timeline.push(instructionsA_final);
+
+    // Conditional wrapper to skip final instruction if skipped
+    const instructionsA_final_node = {
+        timeline: [instructionsA_final],
+        conditional_function: function () {
+            return !window.skipA;
+        }
+    };
+    timeline.push(instructionsA_final_node);
 
     const PartA = {
         type: jsPsychTrails,
@@ -732,7 +810,9 @@
         ],
         show_clickable_nav: true,
         button_label_next: "Next",
-        button_label_previous: "Back"
+        button_label_previous: "Back",
+        on_load: () => addSkipButton('B'),
+        on_finish: () => removeSkipButton()
     };
     timeline.push(instructionsB_intro);
 
@@ -750,7 +830,15 @@
         button_label_next: "Start Game",
         button_label_previous: "Back"
     };
-    timeline.push(instructionsB_final);
+
+    // Conditional wrapper to skip final instruction if skipped
+    const instructionsB_final_node = {
+        timeline: [instructionsB_final],
+        conditional_function: function () {
+            return !window.skipB;
+        }
+    };
+    timeline.push(instructionsB_final_node);
 
     const PartB = {
         type: jsPsychTrails,
