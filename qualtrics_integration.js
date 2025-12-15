@@ -74,8 +74,10 @@ Qualtrics.SurveyEngine.addOnload(function () {
             // Show Next Button
             qThis.showNextButton();
 
-            // Optional: Auto-advance
-            qThis.clickNextButton();
+            // Optional: Auto-advance after 5 seconds
+            setTimeout(function () {
+                qThis.clickNextButton();
+            }, 5000);
         }
     });
 
