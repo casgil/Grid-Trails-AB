@@ -1,0 +1,9 @@
+gridSize,internal_node_id,missBoxValue,missDistance,missExpectedGridIndex,missExpectedValue,missGridIndex,missTimeRT,randomOrder,rt,success,timeRT,time_elapsed,trailsType,trial_index,trial_type,view_history
+,0.0-0.0,,,,,,,,,True,,2223,,0,fullscreen,
+,0.0-1.0,,,,,,,,4023,,,6247,,1,instructions,"[{""page_index"":0,""viewing_time"":1214},{""page_index"":1,""viewing_time"":1080},{""page_index"":2,""viewing_time"":964},{""page_index"":3,""viewing_time"":765}]"
+4,0.0-2.0-0.0,[],[],[],[],[],[],"[9, 7, 14, 16, 3, 11, 12, 8, 13, 2, 1, 6, 10, 5, 15, 4]",11745,,"[1005, 1389, 1813, 2552, 3158, 3863, 5320, 6254, 7391, 7852, 8461, 9174, 9988, 10622, 11301, 11745]",17996,A,2,trails,
+,0.0-2.0-1.0,,,,,,,,938,,,18935,,3,instructions,"[{""page_index"":0,""viewing_time"":938}]"
+,0.0-3.0,,,,,,,,3175,,,22111,,4,instructions,"[{""page_index"":0,""viewing_time"":769},{""page_index"":1,""viewing_time"":929},{""page_index"":2,""viewing_time"":805},{""page_index"":3,""viewing_time"":672}]"
+4,0.0-4.0-0.0,[],[],[],[],[],[],"['C', 1, 'D', 'G', 'E', 'B', 'H', 'A', 7, 2, 8, 6, 'F', 4, 5, 3]",11614,,"[912, 1385, 2168, 2966, 3566, 4550, 5367, 5799, 7440, 8022, 8766, 9503, 10079, 10726, 11278, 11614]",33726,B,5,trails,
+,0.0-4.0-1.0,,,,,,,,688,,,34415,,6,instructions,"[{""page_index"":0,""viewing_time"":688}]"
+,0.0-5.0,,,,,,,,,True,,35416,,7,fullscreen,

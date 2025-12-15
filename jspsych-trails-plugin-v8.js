@@ -52,8 +52,8 @@ var jsPsychTrails = (function (jspsych) {
                 <span>Time: <span id="timer">0.0</span>s</span>
             </div>
             <div id="game-board" style="margin: 0 auto 2rem auto;">
-                ${trial.random_order.map(val =>
-        `<div class="cell" data-value="${val}">${val}</div>`
+                ${trial.random_order.map((val, index) =>
+        `<div class="cell" data-value="${val}" data-index="${index}">${val}</div>`
       ).join('')}
             </div>
             <div id="feedback-msg" style="height: 1.5rem; color: var(--error-color); font-weight: 600; opacity: 0; transition: opacity 0.2s;">Incorrect!</div>
@@ -65,6 +65,16 @@ var jsPsychTrails = (function (jspsych) {
       const cells = display_element.querySelectorAll('.cell');
       const feedbackEl = display_element.querySelector('#feedback-msg');
       const timerEl = display_element.querySelector('#timer');
+
+      // Data Logging State
+      const click_events = []; // Stores manual clicks: {time, value, correct, row, col}
+
+      // Helper: Get Grid Coordinates (1-based: Row 1-4, Col 1-4)
+      const getCoords = (index) => {
+        const row = Math.floor(index / trial.grid_size) + 1;
+        const col = (index % trial.grid_size) + 1;
+        return { row, col };
+      };
 
       // Timer Logic
       const updateTimer = () => {
@@ -84,10 +94,26 @@ var jsPsychTrails = (function (jspsych) {
           timerInterval = setInterval(updateTimer, 100);
         }
 
+        const currentTime = performance.now();
+        const timeFromStart = currentTime - startTime;
+
         const value = cell.dataset.value;
+        const index = parseInt(cell.dataset.index, 10);
+        const coords = getCoords(index);
         const target = String(trial.correct_order[currentIndex]);
 
-        if (String(value) === target) {
+        const isCorrect = String(value) === target;
+
+        // Log Event
+        click_events.push({
+          timestamp: Math.round(timeFromStart),
+          value: value,
+          correct: isCorrect,
+          row: coords.row,
+          col: coords.col
+        });
+
+        if (isCorrect) {
           // Correct
           cell.classList.add('correct');
           cell.classList.remove('error-shake'); // Clear any error state
@@ -131,11 +157,20 @@ var jsPsychTrails = (function (jspsych) {
         const endTime = performance.now();
         const rt = endTime - startTime;
 
+        // Calculate functionality coordinates for the Correct Path (the order they SHOULD have clicked)
+        const correct_path_coords = trial.correct_order.map(val => {
+          const idx = trial.random_order.indexOf(val);
+          return getCoords(idx);
+        });
+
         const trial_data = {
           rt: rt,
           errors: errors,
           trails_type: trial.trails_type,
-          grid_size: trial.grid_size
+          grid_size: trial.grid_size,
+          // Store lists as JSON strings for CSV compatibility per request
+          click_history: JSON.stringify(click_events),
+          correct_path: JSON.stringify(correct_path_coords)
         };
 
         // Clear display

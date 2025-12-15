@@ -727,17 +727,14 @@
     // Timeline
     const timeline = [];
 
-    // 1. Participant ID - REMOVED PER USER REQUEST
-    // const participant_node = {
-    //     type: jsPsychSurveyText,
-    //     questions: [{ prompt: "<h2>Grid Trails Task</h2><p>Please enter your Participant ID:</p>", required: true }],
-    //     button_label: "Begin Task",
-    //     on_load: function () {
-    //         const content = document.querySelector('.jspsych-content');
-    //         if (content) content.classList.add('card');
-    //     }
-    // };
-    // timeline.push(participant_node);
+    // 1. Participant ID - Auto-generated or from URL
+    // We can capture URL params using jsPsych or standard JS
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlID = urlParams.get('participant_id');
+    const participantID = urlID ? urlID : 'Participant_' + Date.now();
+
+    // Add to data property for all trials
+    jsPsych.data.addProperties({ subject: participantID });
 
     // 2. Fullscreen - Removed per user request
     // timeline.push({
@@ -950,8 +947,42 @@
         on_load: function () {
             // Trigger download on load to match modern version behavior
             const date = new Date().toISOString();
-            const subjectId = jsPsych.data.get().select('response').values[0]?.Q0 || 'PARTICIPANT';
-            jsPsych.data.get().localSave('csv', `grid_trails_jspsych_${subjectId}_${date}.csv`);
+            // Use the subject ID we set in properties or fallback
+            // Note: we removed the survey question, so response.Q0 doesn't exist.
+            // We use the 'subject' property we added at the start.
+            const subjectId = jsPsych.data.get().select('subject').values[0] || 'PARTICIPANT';
+
+            // 1. CSV Download (Only if NOT embedded)
+            if (window.parent === window) {
+                jsPsych.data.get().localSave('csv', `grid_trails_jspsych_${subjectId}.csv`);
+            }
+
+            // 2. PostMessage to Parent (Qualtrics)
+            const partA = jsPsych.data.get().filter({ trails_type: 'A' }).values()[0] || { rt: 0, errors: 0 };
+            const partB = jsPsych.data.get().filter({ trails_type: 'B' }).values()[0] || { rt: 0, errors: 0 };
+            const timeA = (partA.rt / 1000).toFixed(2);
+            const timeB = (partB.rt / 1000).toFixed(2);
+
+            const payload = {
+                type: 'grid_trails_complete',
+                participant_id: subjectId,
+                results: {
+                    time_a: timeA,
+                    errors_a: partA.errors,
+                    click_history_a: partA.click_history,
+                    correct_path_a: partA.correct_path,
+
+                    time_b: timeB,
+                    errors_b: partB.errors,
+                    click_history_b: partB.click_history,
+                    correct_path_b: partB.correct_path
+                }
+            };
+
+            // Send to parent window (if embedded)
+            if (window.parent !== window) {
+                window.parent.postMessage(payload, '*');
+            }
         }
     };
     timeline.push(end_block);
