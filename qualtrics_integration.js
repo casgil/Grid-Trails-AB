@@ -71,11 +71,9 @@ Qualtrics.SurveyEngine.addOnload(function () {
             Qualtrics.SurveyEngine.setEmbeddedData('GridTrails_ClickHistoryB', data.results.click_history_b);
             Qualtrics.SurveyEngine.setEmbeddedData('GridTrails_CorrectPathB', data.results.correct_path_b);
 
-            // Show Next Button
-            qThis.showNextButton();
-
-            // Optional: Auto-advance after 5 seconds
+            // Wait 5 seconds, THEN Show and Click Next
             setTimeout(function () {
+                qThis.showNextButton();
                 qThis.clickNextButton();
             }, 5000);
         }
