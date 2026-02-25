@@ -661,6 +661,9 @@
     window.skipA = false;
     window.skipB = false;
 
+    // Store completion time for feedback (set by on_finish of each trails trial)
+    let rtSeconds = 0;
+
     window.doSkip = function (part) {
         if (part === 'A') window.skipA = true;
         if (part === 'B') window.skipB = true;
@@ -825,9 +828,25 @@
         grid_size: 4,
         trails_type: 'A',
         correct_order: generateSequenceA(),
-        random_order: shuffle(generateSequenceA())
+        random_order: shuffle(generateSequenceA()),
+        on_finish: (data) => {
+            rtSeconds = Math.round((data.rt / 1000) * 100) / 100;
+        }
     };
     timeline.push(PartA);
+
+    const feedbackA = {
+        type: jsPsychInstructions,
+        pages: () => [
+            `<div class="card">
+                <p>You took ${rtSeconds} seconds to complete the task.</p>
+            </div>`
+        ],
+        show_clickable_nav: true,
+        button_label_next: "Next Trial",
+        allow_backward: false
+    };
+    timeline.push(feedbackA);
 
     // --- PART B ---
     // Instructions Part 1 (Demo)
@@ -892,9 +911,25 @@
         grid_size: 4,
         trails_type: 'B',
         correct_order: generateSequenceB(),
-        random_order: shuffle(generateSequenceB())
+        random_order: shuffle(generateSequenceB()),
+        on_finish: (data) => {
+            rtSeconds = Math.round((data.rt / 1000) * 100) / 100;
+        }
     };
     timeline.push(PartB);
+
+    const feedbackB = {
+        type: jsPsychInstructions,
+        pages: () => [
+            `<div class="card">
+                <p>You took ${rtSeconds} seconds to complete the task.</p>
+            </div>`
+        ],
+        show_clickable_nav: true,
+        button_label_next: "Next Trial",
+        allow_backward: false
+    };
+    timeline.push(feedbackB);
 
     // End - Results Summary
     const end_block = {
@@ -940,7 +975,6 @@
                             </tr>
                         </tbody>
                     </table>
-                    <p>Data will be downloaded automatically.</p>
                 </div>
             `;
         },
